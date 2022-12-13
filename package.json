@@ -1,0 +1,54 @@
+{
+  "name": "@dappql/core",
+  "version": "0.0.0",
+  "description": "DappQL core Module",
+  "keywords": [
+    "useDapp",
+    "etherjs",
+    "typechain",
+    "blockchain",
+    "smart-contracts",
+    "dapp",
+    "hooks",
+    "react hooks",
+    "query"
+  ],
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "tsc -b -w",
+    "build": "tsc -b",
+    "ship": "npm run build && npm version patch && git push && npm publish --access public"
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "/dist"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dappql/cache.git"
+  },
+  "author": "DappQL Team",
+  "bugs": {
+    "url": "https://github.com/dappql/cache/issues"
+  },
+  "homepage": "https://github.com/dappql/cache#readme",
+  "license": "MIT",
+  "peerDependencies": {
+    "react": "^18.2.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.0.26",
+    "@typescript-eslint/eslint-plugin": "^5.46.1",
+    "@typescript-eslint/parser": "^5.46.1",
+    "eslint": "^8.29.0",
+    "eslint-config-universe": "^11.1.1",
+    "prettier": "^2.7.1",
+    "typescript": "^4.4.4"
+  },
+  "dependencies": {
+    "@dappql/cache": "^0.0.8",
+    "@usedapp/core": "^1.2.2",
+    "ethers": "^5.7.2"
+  }
+}
