@@ -10,7 +10,7 @@ import DappQLCacheProvider, {
   useTokenAllowance as useTokenAllowanceCache,
   useTokenBalance as useTokenBalanceCache,
 } from '@dappql/cache'
-import { Call, QueryParams } from '@usedapp/core'
+import { Call, QueryParams, useEthers } from '@usedapp/core'
 import {
   ContractMethodNames,
   Falsy,
@@ -37,39 +37,47 @@ export default function DappQLProvider(props: {
 
 export function useDappQL(queryParams: QueryParams & CacheOptions = {}) {
   const context = useContext(Context)
-  return { ...context.queryParams, ...queryParams }
+  const { chainId } = useEthers()
+
+  return {
+    queryParams: {
+      ...context.queryParams,
+      ...queryParams,
+      chainId: queryParams.chainId || context.queryParams.chainId || chainId,
+    },
+  }
 }
 
 export function useCall<
   T extends TypedContract,
   MN extends ContractMethodNames<T>,
 >(call: Call<T, MN> | Falsy, queryParams: QueryParams & CacheOptions = {}) {
-  const finalQueryParams = useDappQL(queryParams)
-  return useCallCache(call, finalQueryParams)
+  const dappql = useDappQL(queryParams)
+  return useCallCache(call, dappql.queryParams)
 }
 
 export function useCalls(
   calls: (Call | Falsy)[],
   queryParams: QueryParams & CacheOptions = {},
 ) {
-  const finalQueryParams = useDappQL(queryParams)
-  return useCallsCache(calls, finalQueryParams)
+  const dappql = useDappQL(queryParams)
+  return useCallsCache(calls, dappql.queryParams)
 }
 
 export function useEtherBalance(
   address: QueryEthAddress,
   queryParams: QueryParams & CacheOptions = {},
 ) {
-  const finalQueryParams = useDappQL(queryParams)
-  return useEtherBalanceCache(address, finalQueryParams)
+  const dappql = useDappQL(queryParams)
+  return useEtherBalanceCache(address, dappql.queryParams)
 }
 
 export function useToken(
   tokenAddress: QueryEthAddress,
   queryParams: QueryParams & CacheOptions = {},
 ) {
-  const finalQueryParams = useDappQL(queryParams)
-  return useTokenCache(tokenAddress, finalQueryParams)
+  const dappql = useDappQL(queryParams)
+  return useTokenCache(tokenAddress, dappql.queryParams)
 }
 
 export function useTokenAllowance(
@@ -78,12 +86,12 @@ export function useTokenAllowance(
   spenderAddress: QueryEthAddress,
   queryParams: QueryParams & CacheOptions = {},
 ) {
-  const finalQueryParams = useDappQL(queryParams)
+  const dappql = useDappQL(queryParams)
   return useTokenAllowanceCache(
     tokenAddress,
     ownerAddress,
     spenderAddress,
-    finalQueryParams,
+    dappql,
   )
 }
 
@@ -92,6 +100,6 @@ export function useTokenBalance(
   address: QueryEthAddress,
   queryParams: QueryParams & CacheOptions = {},
 ) {
-  const finalQueryParams = useDappQL(queryParams)
-  return useTokenBalanceCache(tokenAddress, address, finalQueryParams)
+  const dappql = useDappQL(queryParams)
+  return useTokenBalanceCache(tokenAddress, address, dappql.queryParams)
 }
