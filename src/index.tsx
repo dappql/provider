@@ -91,7 +91,7 @@ export function useTokenAllowance(
     tokenAddress,
     ownerAddress,
     spenderAddress,
-    dappql,
+    dappql.queryParams,
   )
 }
 
