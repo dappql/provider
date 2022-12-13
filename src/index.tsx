@@ -36,8 +36,8 @@ export default function DappQLProvider(props: {
 }
 
 export function useDappQL(queryParams: QueryParams & CacheOptions = {}) {
-  const globalQueryParams = useContext(Context)
-  return { ...globalQueryParams, ...queryParams }
+  const context = useContext(Context)
+  return { ...context.queryParams, ...queryParams }
 }
 
 export function useCall<
