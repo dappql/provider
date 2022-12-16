@@ -13,6 +13,8 @@ export {
   useMasterQuery,
   MasterQueryContainer,
   MasterAccountQueryContainer,
+  AccountQueryContainerProps,
+  QueryContainerProps,
 } from './MasterQuery'
-export { useMasterMutation } from './useMasterMutation'
+export { useMasterMutation, MasterMutation } from './useMasterMutation'
 export { useTransactionLoading } from './useTransactionLoading'

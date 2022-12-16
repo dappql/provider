@@ -66,4 +66,4 @@ export function useMasterMutation<
   }
 }
 
-export type Mutation = ReturnType<typeof useMasterMutation>
+export type MasterMutation = ReturnType<typeof useMasterMutation>
