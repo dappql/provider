@@ -14,18 +14,25 @@ export function useMasterMutation<
   Contracts extends ContractCollection,
   T extends keyof Contracts,
 >(
-  getContract: (contract: T, network?: number) => Contracts[T],
+  getContract: (contract: T, network: number, address?: string) => Contracts[T],
   contractName: T,
   methodName: ContractFunctionNames<Contracts[T]>,
   transactionName?: string,
 ) {
   const {
     queryParams: { chainId },
+    addressResolver,
     onMutationError,
   } = useDappQL()
+
   const contract = useMemo(
-    () => getContract(contractName, chainId),
-    [contractName, chainId],
+    () =>
+      getContract(
+        contractName,
+        chainId,
+        addressResolver?.(contractName.toString(), chainId),
+      ),
+    [contractName, chainId, addressResolver],
   )
   const [submitting, setSubmitting] = useState(false)
 

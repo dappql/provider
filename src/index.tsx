@@ -1,4 +1,9 @@
-export { useDappQL, DappQLProvider } from './provider'
+export {
+  useDappQL,
+  DappQLProvider,
+  AddressResolverProps,
+  AddressResolverFunction,
+} from './provider'
 
 export {
   useCall,

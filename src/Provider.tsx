@@ -1,4 +1,4 @@
-import { createContext, useContext } from 'react'
+import { ComponentType, createContext, useContext, useState } from 'react'
 
 import DappQLCacheProvider, { CacheOptions } from '@dappql/cache'
 import { QueryParams, useEthers, Config, DAppProvider } from '@usedapp/core'
@@ -11,6 +11,15 @@ const Context = createContext<{
   addressResolver?: (contractName: string, chainId?: number) => string
 }>({})
 
+export type AddressResolverFunction = (
+  contractName: string,
+  chainId?: number,
+) => string | undefined
+
+export type AddressResolverProps = {
+  onResolved: (resolver: AddressResolverFunction) => any
+}
+
 export function DappQLProvider({
   config,
   queryParams = {},
@@ -18,21 +27,41 @@ export function DappQLProvider({
   children,
   onMutationError,
   addressResolver,
+  AddressResolverComponent,
 }: {
   config: Config
   children: any
   queryParams?: QueryParams
   cacheOptions?: CacheOptions
   onMutationError?: (error: Error) => any
-  addressResolver?: (contractName: string, chainId?: number) => string
+  addressResolver?: AddressResolverFunction
+  AddressResolverComponent?: ComponentType<AddressResolverProps>
 }) {
+  const [addressResolverState, setAddressResolver] = useState<{
+    callback: AddressResolverFunction | undefined
+  }>({ callback: addressResolver })
   return (
-    <DAppProvider config={config}>
-      <Context.Provider
-        value={{ queryParams, onMutationError, addressResolver }}>
-        <DappQLCacheProvider {...cacheOptions}>{children}</DappQLCacheProvider>
-      </Context.Provider>
-    </DAppProvider>
+    <DappQLCacheProvider {...cacheOptions}>
+      <DAppProvider config={config}>
+        <Context.Provider
+          value={{
+            queryParams,
+            onMutationError,
+            addressResolver: addressResolverState.callback,
+          }}>
+          {AddressResolverComponent ? (
+            <AddressResolverComponent
+              onResolved={(callback) => {
+                setAddressResolver({ callback })
+              }}
+            />
+          ) : null}
+          {!AddressResolverComponent || addressResolverState.callback
+            ? children
+            : null}
+        </Context.Provider>
+      </DAppProvider>
+    </DappQLCacheProvider>
   )
 }
 

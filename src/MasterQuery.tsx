@@ -9,7 +9,8 @@ import { useCalls } from './hooks'
 import { useDappQL } from './provider'
 
 type Request = {
-  contract: (network?: number) => BaseContract
+  contractName: string
+  contract: (network: number, address?: string) => BaseContract
   method: ContractMethodNames<BaseContract>
   args: Params<BaseContract, ContractMethodNames<BaseContract>>
   returnType?: Awaited<
@@ -31,16 +32,23 @@ export function useMasterQuery<
   error: Error | undefined
   stale?: boolean
 } {
-  const { queryParams: finalQueryParams } = useDappQL(queryParams)
+  const { queryParams: finalQueryParams, addressResolver } =
+    useDappQL(queryParams)
   const queryIndex = JSON.stringify({ requests, queryParams: finalQueryParams })
 
   const { callKeys, calls } = useMemo(() => {
     const callKeys = Object.keys(requests) as (keyof T)[]
-    const calls = callKeys.map((c) => ({
-      contract: requests[c].contract(finalQueryParams.chainId),
-      method: requests[c].method,
-      args: requests[c].args,
-    }))
+    const calls = callKeys.map((c) => {
+      const req = requests[c]
+      return {
+        contract: req.contract(
+          finalQueryParams.chainId,
+          addressResolver?.(req.contractName, finalQueryParams.chainId),
+        ),
+        method: req.method,
+        args: req.args,
+      }
+    })
     return { callKeys, calls }
   }, [queryIndex])
 
@@ -54,7 +62,10 @@ export function useMasterQuery<
       [K in keyof T]: NonNullable<T[K]['returnType']>
     }
     callKeys.forEach((k, index) => {
-      requestWithData[k] = result[index]?.value?.[0]
+      requestWithData[k] =
+        result[index]?.value?.length > 1
+          ? result[index]?.value
+          : result[index]?.value?.[0]
     })
     return requestWithData
   }, [result, callKeys])
