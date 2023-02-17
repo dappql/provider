@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { TransactionReceipt } from '@ethersproject/abstract-provider'
-import { useContractFunction } from '@usedapp/core'
+import { useContractFunction, useEthers } from '@usedapp/core'
 import { ContractFunctionNames, Params } from '@usedapp/core/dist/esm/src/model'
 import { BaseContract } from 'ethers'
 
@@ -25,6 +25,8 @@ export function useMasterMutation<
     onMutationError,
   } = useDappQL()
 
+  const { chainId: providerChainId } = useEthers()
+
   const contract = useMemo(
     () =>
       getContract(
@@ -45,10 +47,14 @@ export function useMasterMutation<
     async (
       ...args: Params<Contracts[T], typeof methodName>
     ): Promise<TransactionReceipt | undefined> => {
+      if (!providerChainId) {
+        onMutationError(new Error('Invalid Chain'))
+        return
+      }
       setSubmitting(true)
       return transaction.send(...args)
     },
-    [transaction.send, chainId],
+    [transaction.send, chainId, providerChainId],
   )
 
   useEffect(() => {
