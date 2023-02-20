@@ -1,15 +1,12 @@
-import { useCallback, useState } from 'react'
+import { useCallback } from 'react'
 
-import { TransactionReceipt } from '@ethersproject/abstract-provider'
 import {
   ChainId,
   TransactionOptions,
   useConfig,
   useEthers,
 } from '@usedapp/core'
-import { getSignerFromOptions } from '@usedapp/core/dist/esm/src/helpers/getSignerFromOptions'
-import { connectContractToSigner } from '@usedapp/core/dist/esm/src/hooks/useContractFunction'
-import { usePromiseTransaction } from '@usedapp/core/dist/esm/src/hooks/usePromiseTransaction'
+import { connectContractToSigner } from '@usedapp/core/dist/esm/src/hooks'
 import {
   ContractFunctionNames,
   Falsy,
@@ -17,8 +14,45 @@ import {
   TypedContract,
 } from '@usedapp/core/dist/esm/src/model'
 import { useReadonlyNetworks } from '@usedapp/core/dist/esm/src/providers'
-import { Contract, providers, BigNumber } from 'ethers'
-import { LogDescription } from 'ethers/lib/utils'
+import { ethers, Contract, providers, BigNumber } from 'ethers'
+
+type BaseProvider = providers.BaseProvider
+type JsonRpcProvider = providers.JsonRpcProvider
+type FallbackProvider = providers.FallbackProvider
+
+export const getSignerFromOptions = (
+  provider: BaseProvider,
+  options?: TransactionOptions,
+  library?: JsonRpcProvider | FallbackProvider,
+) => {
+  const privateKey = options && 'privateKey' in options && options.privateKey
+  const mnemonicPhrase =
+    options && 'mnemonicPhrase' in options && options.mnemonicPhrase
+  const json = options && 'json' in options && options.json
+  const password = options && 'password' in options && options.password
+
+  const privateKeySigner =
+    privateKey && provider && new ethers.Wallet(privateKey, provider)
+  const mnemonicPhraseSigner =
+    mnemonicPhrase &&
+    provider &&
+    ethers.Wallet.fromMnemonic(mnemonicPhrase).connect(provider)
+  const encryptedJsonSigner =
+    json &&
+    password &&
+    provider &&
+    ethers.Wallet.fromEncryptedJsonSync(json, password).connect(provider)
+
+  const optionsSigner = options && 'signer' in options && options.signer
+
+  return (
+    privateKeySigner ||
+    mnemonicPhraseSigner ||
+    encryptedJsonSigner ||
+    optionsSigner ||
+    (library && 'getSigner' in library ? library.getSigner() : undefined)
+  )
+}
 
 export async function estimateContractFunctionGasLimit(
   contractWithSigner: Contract,
@@ -33,18 +67,13 @@ export async function estimateContractFunctionGasLimit(
   return gasLimit
 }
 
-export default function useContractFunction<
+export default function useGasEstimation<
   T extends TypedContract,
   FN extends ContractFunctionNames<T>,
 >(contract: T | Falsy, functionName: FN, options?: TransactionOptions) {
   const { library, chainId } = useEthers()
   const transactionChainId =
     (options && 'chainId' in options && options?.chainId) || chainId
-  const { promiseTransaction, state, resetState } = usePromiseTransaction(
-    transactionChainId,
-    options,
-  )
-  const [events, setEvents] = useState<LogDescription[] | undefined>(undefined)
 
   const config = useConfig()
   const gasLimitBufferPercentage =
@@ -57,8 +86,8 @@ export default function useContractFunction<
   const provider = (transactionChainId &&
     providers[transactionChainId as ChainId])!
 
-  const send = useCallback(
-    async (...args: Params<T, FN>): Promise<TransactionReceipt | undefined> => {
+  const estimate = useCallback(
+    async (...args: Params<T, FN>) => {
       if (contract) {
         const numberOfArgs =
           contract.interface.getFunction(functionName).inputs.length
@@ -80,6 +109,7 @@ export default function useContractFunction<
           options,
           signer,
         )
+
         const opts = hasOpts ? args[args.length - 1] : undefined
 
         const gasLimit =
@@ -97,36 +127,10 @@ export default function useContractFunction<
           gasLimit,
           ...opts,
         }
+
         const modifiedArgs = hasOpts ? args.slice(0, args.length - 1) : args
 
-        const receipt = await promiseTransaction(
-          contractWithSigner[functionName](...modifiedArgs, modifiedOpts),
-          {
-            safeTransaction: {
-              to: contract.address,
-              value: opts?.value,
-              data: contract.interface.encodeFunctionData(
-                functionName,
-                modifiedArgs,
-              ),
-              safeTxGas: gasLimit ?? undefined,
-            },
-          },
-        )
-        if (receipt?.logs) {
-          const events = receipt.logs.reduce((accumulatedLogs, log) => {
-            try {
-              return log.address.toLowerCase() ===
-                contract.address.toLowerCase()
-                ? [...accumulatedLogs, contract.interface.parseLog(log)]
-                : accumulatedLogs
-            } catch {
-              return accumulatedLogs
-            }
-          }, [] as LogDescription[])
-          setEvents(events)
-        }
-        return receipt
+        return [...modifiedArgs, modifiedOpts]
       }
     },
     [
@@ -136,9 +140,8 @@ export default function useContractFunction<
       provider,
       library,
       gasLimitBufferPercentage,
-      promiseTransaction,
     ],
   )
 
-  return { send, state, events, resetState }
+  return estimate
 }

@@ -1,12 +1,16 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { TransactionReceipt } from '@ethersproject/abstract-provider'
-import { useEthers } from '@usedapp/core'
-import { ContractFunctionNames, Params } from '@usedapp/core/dist/esm/src/model'
+import { useContractFunction, useEthers } from '@usedapp/core'
+import {
+  ContractFunctionNames,
+  Params,
+  TransactionOptions,
+} from '@usedapp/core/dist/esm/src/model'
 import { BaseContract } from 'ethers'
 
 import { useDappQL } from './provider'
-import useContractFunction from './useContractFunction'
+import useGasEstimation from './useGasEstimation'
 import { useTransactionLoading } from './useTransactionLoading'
 
 type ContractCollection = Record<string, BaseContract>
@@ -18,7 +22,7 @@ export function useMasterMutation<
   getContract: (contract: T, network: number, address?: string) => Contracts[T],
   contractName: T,
   methodName: ContractFunctionNames<Contracts[T]>,
-  transactionName?: string,
+  optionsOrTransactionName?: TransactionOptions | string,
 ) {
   const {
     queryParams: { chainId },
@@ -40,8 +44,17 @@ export function useMasterMutation<
 
   const [submitting, setSubmitting] = useState(false)
 
+  const options = useMemo(
+    () =>
+      typeof optionsOrTransactionName === 'string'
+        ? { transactionName: optionsOrTransactionName }
+        : optionsOrTransactionName,
+    [optionsOrTransactionName],
+  )
+
+  const estimate = useGasEstimation(contract, methodName, options)
   const transaction = useContractFunction(contract, methodName, {
-    transactionName: transactionName || methodName,
+    transactionName: options?.transactionName || methodName,
   })
   const isLoading = useTransactionLoading(transaction.state) || submitting
 
@@ -53,10 +66,12 @@ export function useMasterMutation<
         onMutationError(new Error('Invalid Chain'))
         return
       }
+
       setSubmitting(true)
-      return transaction.send(...args)
+      const modifiedArgs = await estimate(...args)
+      return transaction.send(...modifiedArgs)
     },
-    [transaction.send, chainId, providerChainId, contract],
+    [transaction.send, chainId, providerChainId, contract, estimate],
   )
 
   useEffect(() => {
