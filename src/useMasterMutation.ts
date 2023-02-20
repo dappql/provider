@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { TransactionReceipt } from '@ethersproject/abstract-provider'
-import { useContractFunction, useEthers } from '@usedapp/core'
+import { useEthers } from '@usedapp/core'
 import { ContractFunctionNames, Params } from '@usedapp/core/dist/esm/src/model'
 import { BaseContract } from 'ethers'
 
 import { useDappQL } from './provider'
+import useContractFunction from './useContractFunction'
 import { useTransactionLoading } from './useTransactionLoading'
 
 type ContractCollection = Record<string, BaseContract>
@@ -36,6 +37,7 @@ export function useMasterMutation<
       ),
     [contractName, chainId, addressResolver],
   )
+
   const [submitting, setSubmitting] = useState(false)
 
   const transaction = useContractFunction(contract, methodName, {
@@ -54,7 +56,7 @@ export function useMasterMutation<
       setSubmitting(true)
       return transaction.send(...args)
     },
-    [transaction.send, chainId, providerChainId],
+    [transaction.send, chainId, providerChainId, contract],
   )
 
   useEffect(() => {
