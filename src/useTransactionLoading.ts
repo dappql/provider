@@ -19,6 +19,7 @@ export function useTransactionLoading(state: TransactionStatus) {
     const transactionNotifications = notifications.filter(
       (n) =>
         n.type !== 'walletConnected' &&
+        n.type !== 'transactionPendingSignature' &&
         n.transaction.hash === state.transaction?.hash,
     )
 

@@ -48,7 +48,7 @@
   },
   "dependencies": {
     "@dappql/cache": "^0.0.10",
-    "@usedapp/core": "^1.2.2",
+    "@usedapp/core": "^1.2.4",
     "ethers": "^5.7.2"
   }
 }
