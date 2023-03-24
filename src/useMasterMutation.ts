@@ -38,7 +38,7 @@ export function useMasterMutation<
         chainId,
         addressResolver?.(contractName.toString(), chainId),
       ),
-    [contractName, chainId, addressResolver],
+    [getContract, contractName, chainId, addressResolver],
   )
 
   const [submitting, setSubmitting] = useState(false)
