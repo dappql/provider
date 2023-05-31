@@ -2,11 +2,25 @@ import { ComponentType, createContext, useContext, useState } from 'react'
 
 import DappQLCacheProvider, { CacheOptions } from '@dappql/cache'
 import { QueryParams, useEthers, Config, DAppProvider } from '@usedapp/core'
+import {
+  ContractFunctionNames,
+  Params,
+} from '@usedapp/core/dist/esm/src/model/types'
+import { BaseContract } from 'ethers'
 
 export { useLookupAddress } from '@dappql/cache'
 
+type ContractCollection = Record<string, BaseContract>
+
 const Context = createContext<{
   queryParams?: QueryParams
+  onMutationSubmit?: <
+    Contracts extends ContractCollection,
+    T extends keyof Contracts,
+  >(
+    ...args: Params<Contracts[T], ContractFunctionNames<Contracts[T]>>
+  ) => any
+  onMutationSuccess?: () => any
   onMutationError?: (error: Error) => any
   addressResolver?: (contractName: string, chainId?: number) => string
 }>({})
@@ -25,6 +39,8 @@ export function DappQLProvider({
   queryParams = {},
   cacheOptions = {},
   children,
+  onMutationSubmit,
+  onMutationSuccess,
   onMutationError,
   addressResolver,
   AddressResolverComponent,
@@ -33,6 +49,13 @@ export function DappQLProvider({
   children: any
   queryParams?: QueryParams
   cacheOptions?: CacheOptions
+  onMutationSubmit?: <
+    Contracts extends ContractCollection,
+    T extends keyof Contracts,
+  >(
+    ...args: Params<Contracts[T], ContractFunctionNames<Contracts[T]>>
+  ) => any
+  onMutationSuccess?: () => any
   onMutationError?: (error: Error) => any
   addressResolver?: AddressResolverFunction
   AddressResolverComponent?: ComponentType<AddressResolverProps>
@@ -46,6 +69,8 @@ export function DappQLProvider({
         <Context.Provider
           value={{
             queryParams,
+            onMutationSubmit,
+            onMutationSuccess,
             onMutationError,
             addressResolver: addressResolverState.callback,
           }}>

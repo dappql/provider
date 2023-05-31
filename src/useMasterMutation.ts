@@ -26,6 +26,8 @@ export function useMasterMutation<
   const {
     queryParams: { chainId },
     addressResolver,
+    onMutationSubmit,
+    onMutationSuccess,
     onMutationError,
   } = useDappQL()
 
@@ -66,6 +68,7 @@ export function useMasterMutation<
       }
 
       setSubmitting(true)
+      onMutationSubmit(...args)
       return transaction.send(...args)
     },
     [transaction.send, chainId, providerChainId, contract],
@@ -74,7 +77,10 @@ export function useMasterMutation<
   useEffect(() => {
     if (transaction.state.status === 'Exception') {
       onMutationError(new Error(transaction.state.errorMessage))
+    } else if (transaction.state.status === 'Success') {
+      onMutationSuccess()
     }
+
     if (['Exception', 'Fail', 'Success'].includes(transaction.state.status)) {
       setSubmitting(false)
     }
