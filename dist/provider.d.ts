@@ -14,7 +14,7 @@ export declare function DappQLProvider({ config, queryParams, cacheOptions, chil
     children: any;
     queryParams?: QueryParams;
     cacheOptions?: CacheOptions;
-    onMutationSubmit?: <Contracts extends ContractCollection, T extends keyof Contracts>(...args: Params<Contracts[T], ContractFunctionNames<Contracts[T]>>) => any;
+    onMutationSubmit?: <Contracts extends ContractCollection, T extends keyof Contracts>(contractName: T, methodName: ContractFunctionNames<Contracts[T]>, transactionName: string, ...args: Params<Contracts[T], ContractFunctionNames<Contracts[T]>>) => any;
     onMutationSuccess?: () => any;
     onMutationError?: (error: Error) => any;
     addressResolver?: AddressResolverFunction;

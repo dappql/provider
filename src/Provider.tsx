@@ -56,6 +56,9 @@ export function DappQLProvider({
     Contracts extends ContractCollection,
     T extends keyof Contracts,
   >(
+    contractName: T,
+    methodName: ContractFunctionNames<Contracts[T]>,
+    transactionName: string,
     ...args: Params<Contracts[T], ContractFunctionNames<Contracts[T]>>
   ) => any
   onMutationSuccess?: () => any
