@@ -33,14 +33,14 @@ export function useMasterMutation<
 
   const { chainId: providerChainId } = useEthers()
 
+  const contractAddress = useMemo(
+    () => addressResolver?.(contractName.toString(), chainId),
+    [contractName, chainId, addressResolver],
+  )
+
   const contract = useMemo(
-    () =>
-      getContract(
-        contractName,
-        chainId,
-        addressResolver?.(contractName.toString(), chainId),
-      ),
-    [getContract, contractName, chainId, addressResolver],
+    () => getContract(contractName, chainId, contractAddress),
+    [getContract, contractName, chainId, contractAddress],
   )
 
   const [submitting, setSubmitting] = useState(false)
@@ -69,6 +69,7 @@ export function useMasterMutation<
 
       setSubmitting(true)
       onMutationSubmit(
+        contractAddress,
         contractName,
         methodName,
         options?.transactionName || '',

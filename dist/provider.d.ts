@@ -14,7 +14,7 @@ export declare function DappQLProvider({ config, queryParams, cacheOptions, chil
     children: any;
     queryParams?: QueryParams;
     cacheOptions?: CacheOptions;
-    onMutationSubmit?: <Contracts extends ContractCollection, T extends keyof Contracts>(contractName: T, methodName: ContractFunctionNames<Contracts[T]>, transactionName: string, ...args: Params<Contracts[T], ContractFunctionNames<Contracts[T]>>) => any;
+    onMutationSubmit?: <Contracts extends ContractCollection, T extends keyof Contracts>(contractAddress: string, contractName: T, methodName: ContractFunctionNames<Contracts[T]>, transactionName: string, ...args: Params<Contracts[T], ContractFunctionNames<Contracts[T]>>) => any;
     onMutationSuccess?: () => any;
     onMutationError?: (error: Error) => any;
     addressResolver?: AddressResolverFunction;
@@ -28,7 +28,7 @@ export declare function useDappQL(queryParams?: QueryParams & CacheOptions): {
         disableCache?: boolean;
         cacheExpiringTime?: number;
     };
-    onMutationSubmit?: <Contracts extends ContractCollection, T extends keyof Contracts>(contractName: T, methodName: ContractFunctionNames<Contracts[T]>, transactionName: string, ...args: Parameters<Contracts[T]["functions"][ContractFunctionNames<Contracts[T]>]>) => any;
+    onMutationSubmit?: <Contracts extends ContractCollection, T extends keyof Contracts>(contractAddress: string, contractName: T, methodName: ContractFunctionNames<Contracts[T]>, transactionName: string, ...args: Parameters<Contracts[T]["functions"][ContractFunctionNames<Contracts[T]>]>) => any;
     onMutationSuccess?: () => any;
     onMutationError?: (error: Error) => any;
     addressResolver?: (contractName: string, chainId?: number) => string;

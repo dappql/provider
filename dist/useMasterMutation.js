@@ -8,7 +8,8 @@ const useTransactionLoading_1 = require("./useTransactionLoading");
 function useMasterMutation(getContract, contractName, methodName, optionsOrTransactionName) {
     const { queryParams: { chainId }, addressResolver, onMutationSubmit, onMutationSuccess, onMutationError, } = (0, provider_1.useDappQL)();
     const { chainId: providerChainId } = (0, core_1.useEthers)();
-    const contract = (0, react_1.useMemo)(() => getContract(contractName, chainId, addressResolver?.(contractName.toString(), chainId)), [getContract, contractName, chainId, addressResolver]);
+    const contractAddress = (0, react_1.useMemo)(() => addressResolver?.(contractName.toString(), chainId), [contractName, chainId, addressResolver]);
+    const contract = (0, react_1.useMemo)(() => getContract(contractName, chainId, contractAddress), [getContract, contractName, chainId, contractAddress]);
     const [submitting, setSubmitting] = (0, react_1.useState)(false);
     const options = (0, react_1.useMemo)(() => typeof optionsOrTransactionName === 'string'
         ? { transactionName: optionsOrTransactionName }
@@ -23,7 +24,7 @@ function useMasterMutation(getContract, contractName, methodName, optionsOrTrans
             return;
         }
         setSubmitting(true);
-        onMutationSubmit(contractName, methodName, options?.transactionName || '', ...args);
+        onMutationSubmit(contractAddress, contractName, methodName, options?.transactionName || '', ...args);
         return transaction.send(...args);
     }, [transaction.send, chainId, providerChainId, contract]);
     (0, react_1.useEffect)(() => {

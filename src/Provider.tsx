@@ -18,6 +18,7 @@ const Context = createContext<{
     Contracts extends ContractCollection,
     T extends keyof Contracts,
   >(
+    contractAddress: string,
     contractName: T,
     methodName: ContractFunctionNames<Contracts[T]>,
     transactionName: string,
@@ -56,6 +57,7 @@ export function DappQLProvider({
     Contracts extends ContractCollection,
     T extends keyof Contracts,
   >(
+    contractAddress: string,
     contractName: T,
     methodName: ContractFunctionNames<Contracts[T]>,
     transactionName: string,
