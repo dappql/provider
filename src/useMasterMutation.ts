@@ -71,7 +71,7 @@ export function useMasterMutation<
       onMutationSubmit(...args)
       return transaction.send(...args)
     },
-    [transaction.send, chainId, providerChainId, contract],
+    [transaction.send, chainId, providerChainId, contract, onMutationSubmit],
   )
 
   useEffect(() => {

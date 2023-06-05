@@ -25,7 +25,7 @@ function useMasterMutation(getContract, contractName, methodName, optionsOrTrans
         setSubmitting(true);
         onMutationSubmit(...args);
         return transaction.send(...args);
-    }, [transaction.send, chainId, providerChainId, contract]);
+    }, [transaction.send, chainId, providerChainId, contract, onMutationSubmit]);
     (0, react_1.useEffect)(() => {
         if (transaction.state.status === 'Exception') {
             onMutationError(new Error(transaction.state.errorMessage));
