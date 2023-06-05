@@ -28,7 +28,7 @@ export declare function useDappQL(queryParams?: QueryParams & CacheOptions): {
         disableCache?: boolean;
         cacheExpiringTime?: number;
     };
-    onMutationSubmit?: <Contracts extends ContractCollection, T extends keyof Contracts>(...args: Parameters<Contracts[T]["functions"][ContractFunctionNames<Contracts[T]>]>) => any;
+    onMutationSubmit?: <Contracts extends ContractCollection, T extends keyof Contracts>(contractName: T, methodName: ContractFunctionNames<Contracts[T]>, transactionName: string, ...args: Parameters<Contracts[T]["functions"][ContractFunctionNames<Contracts[T]>]>) => any;
     onMutationSuccess?: () => any;
     onMutationError?: (error: Error) => any;
     addressResolver?: (contractName: string, chainId?: number) => string;
