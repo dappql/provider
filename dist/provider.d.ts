@@ -13,17 +13,17 @@ type MutationInfo<Contracts extends ContractCollection, T extends keyof Contract
     optionsOrTransactionName?: string;
     submissionId: number;
 };
-type MutationSubmitInfo<Contracts extends ContractCollection, T extends keyof Contracts> = MutationInfo<Contracts, T> & {
+export type MutationSubmitInfo<Contracts extends ContractCollection, T extends keyof Contracts> = MutationInfo<Contracts, T> & {
     args: Params<Contracts[T], ContractFunctionNames<Contracts[T]>>;
 };
-type MutationSuccessInfo<Contracts extends ContractCollection, T extends keyof Contracts> = MutationInfo<Contracts, T> & {
+export type MutationSuccessInfo<Contracts extends ContractCollection, T extends keyof Contracts> = MutationInfo<Contracts, T> & {
     receipt: TransactionReceipt;
 };
-type MutationErrorInfo<Contracts extends ContractCollection, T extends keyof Contracts> = MutationInfo<Contracts, T> & {
+export type MutationErrorInfo<Contracts extends ContractCollection, T extends keyof Contracts> = MutationInfo<Contracts, T> & {
     error: Error;
     receipt?: TransactionReceipt;
 };
-type MutationCallbacks = {
+export type MutationCallbacks = {
     onMutationSubmit?: <Contracts extends ContractCollection, T extends keyof Contracts>(info: MutationSubmitInfo<Contracts, T>) => any;
     onMutationSuccess?: <Contracts extends ContractCollection, T extends keyof Contracts>(info: MutationSuccessInfo<Contracts, T>) => any;
     onMutationError?: <Contracts extends ContractCollection, T extends keyof Contracts>(info: MutationErrorInfo<Contracts, T>) => any;

@@ -24,21 +24,21 @@ type MutationInfo<
   submissionId: number
 }
 
-type MutationSubmitInfo<
+export type MutationSubmitInfo<
   Contracts extends ContractCollection,
   T extends keyof Contracts,
 > = MutationInfo<Contracts, T> & {
   args: Params<Contracts[T], ContractFunctionNames<Contracts[T]>>
 }
 
-type MutationSuccessInfo<
+export type MutationSuccessInfo<
   Contracts extends ContractCollection,
   T extends keyof Contracts,
 > = MutationInfo<Contracts, T> & {
   receipt: TransactionReceipt
 }
 
-type MutationErrorInfo<
+export type MutationErrorInfo<
   Contracts extends ContractCollection,
   T extends keyof Contracts,
 > = MutationInfo<Contracts, T> & {
@@ -46,7 +46,7 @@ type MutationErrorInfo<
   receipt?: TransactionReceipt
 }
 
-type MutationCallbacks = {
+export type MutationCallbacks = {
   onMutationSubmit?: <
     Contracts extends ContractCollection,
     T extends keyof Contracts,
@@ -67,12 +67,12 @@ type MutationCallbacks = {
   ) => any
 }
 
-const Context = createContext<
-  {
-    queryParams?: QueryParams
-    addressResolver?: (contractName: string, chainId?: number) => string
-  } & MutationCallbacks
->({})
+type ContextData = {
+  queryParams?: QueryParams
+  addressResolver?: (contractName: string, chainId?: number) => string
+} & MutationCallbacks
+
+const Context = createContext<ContextData>({})
 
 export type AddressResolverFunction = (
   contractName: string,

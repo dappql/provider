@@ -3,6 +3,10 @@ export {
   DappQLProvider,
   AddressResolverProps,
   AddressResolverFunction,
+  MutationCallbacks,
+  MutationErrorInfo,
+  MutationSubmitInfo,
+  MutationSuccessInfo,
 } from './provider'
 
 export {
