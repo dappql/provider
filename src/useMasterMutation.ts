@@ -12,7 +12,7 @@ import { BaseContract } from 'ethers'
 import { useDappQL } from './provider'
 import { useTransactionLoading } from './useTransactionLoading'
 
-type ContractCollection = Record<string, BaseContract>
+export type ContractCollection = Record<string, BaseContract>
 
 export function useMasterMutation<
   Contracts extends ContractCollection,
