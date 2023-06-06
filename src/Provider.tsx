@@ -1,6 +1,7 @@
 import { ComponentType, createContext, useContext, useState } from 'react'
 
 import DappQLCacheProvider, { CacheOptions } from '@dappql/cache'
+import { TransactionReceipt } from '@ethersproject/abstract-provider'
 import { QueryParams, useEthers, Config, DAppProvider } from '@usedapp/core'
 import {
   ContractFunctionNames,
@@ -12,22 +13,66 @@ export { useLookupAddress } from '@dappql/cache'
 
 type ContractCollection = Record<string, BaseContract>
 
-const Context = createContext<{
-  queryParams?: QueryParams
+type MutationInfo<
+  Contracts extends ContractCollection,
+  T extends keyof Contracts,
+> = {
+  contractAddress: string
+  contractName: T
+  methodName: ContractFunctionNames<Contracts[T]>
+  optionsOrTransactionName?: string
+  submissionId: number
+}
+
+type MutationSubmitInfo<
+  Contracts extends ContractCollection,
+  T extends keyof Contracts,
+> = MutationInfo<Contracts, T> & {
+  args: Params<Contracts[T], ContractFunctionNames<Contracts[T]>>
+}
+
+type MutationSuccessInfo<
+  Contracts extends ContractCollection,
+  T extends keyof Contracts,
+> = MutationInfo<Contracts, T> & {
+  receipt: TransactionReceipt
+}
+
+type MutationErrorInfo<
+  Contracts extends ContractCollection,
+  T extends keyof Contracts,
+> = MutationInfo<Contracts, T> & {
+  error: Error
+  receipt?: TransactionReceipt
+}
+
+type MutationCallbacks = {
   onMutationSubmit?: <
     Contracts extends ContractCollection,
     T extends keyof Contracts,
   >(
-    contractAddress: string,
-    contractName: T,
-    methodName: ContractFunctionNames<Contracts[T]>,
-    transactionName: string,
-    ...args: Params<Contracts[T], ContractFunctionNames<Contracts[T]>>
+    info: MutationSubmitInfo<Contracts, T>,
   ) => any
-  onMutationSuccess?: () => any
-  onMutationError?: (error: Error) => any
-  addressResolver?: (contractName: string, chainId?: number) => string
-}>({})
+  onMutationSuccess?: <
+    Contracts extends ContractCollection,
+    T extends keyof Contracts,
+  >(
+    info: MutationSuccessInfo<Contracts, T>,
+  ) => any
+  onMutationError?: <
+    Contracts extends ContractCollection,
+    T extends keyof Contracts,
+  >(
+    info: MutationErrorInfo<Contracts, T>,
+  ) => any
+}
+
+const Context = createContext<
+  {
+    queryParams?: QueryParams
+    addressResolver?: (contractName: string, chainId?: number) => string
+  } & MutationCallbacks
+>({})
 
 export type AddressResolverFunction = (
   contractName: string,
@@ -43,31 +88,19 @@ export function DappQLProvider({
   queryParams = {},
   cacheOptions = {},
   children,
+  addressResolver,
+  AddressResolverComponent,
   onMutationSubmit,
   onMutationSuccess,
   onMutationError,
-  addressResolver,
-  AddressResolverComponent,
 }: {
   config: Config
   children: any
   queryParams?: QueryParams
   cacheOptions?: CacheOptions
-  onMutationSubmit?: <
-    Contracts extends ContractCollection,
-    T extends keyof Contracts,
-  >(
-    contractAddress: string,
-    contractName: T,
-    methodName: ContractFunctionNames<Contracts[T]>,
-    transactionName: string,
-    ...args: Params<Contracts[T], ContractFunctionNames<Contracts[T]>>
-  ) => any
-  onMutationSuccess?: () => any
-  onMutationError?: (error: Error) => any
   addressResolver?: AddressResolverFunction
   AddressResolverComponent?: ComponentType<AddressResolverProps>
-}) {
+} & MutationCallbacks) {
   const [addressResolverState, setAddressResolver] = useState<{
     callback: AddressResolverFunction | undefined
   }>({ callback: addressResolver })

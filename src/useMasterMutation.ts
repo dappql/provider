@@ -44,6 +44,7 @@ export function useMasterMutation<
   )
 
   const [submitting, setSubmitting] = useState(false)
+  const [submissionId, setSubmissionId] = useState(0)
 
   const options = useMemo(
     () =>
@@ -58,33 +59,56 @@ export function useMasterMutation<
   })
   const isLoading = useTransactionLoading(transaction.state) || submitting
 
+  const mutationInfo = {
+    contractAddress,
+    contractName,
+    methodName,
+    transactionName: options?.transactionName || '',
+  }
+
   const send = useCallback(
     async (
       ...args: Params<Contracts[T], typeof methodName>
     ): Promise<TransactionReceipt | undefined> => {
+      setSubmitting(true)
+
+      const newSubmissionId = Date.now()
+      setSubmissionId(newSubmissionId)
+      onMutationSubmit({
+        ...mutationInfo,
+        submissionId: newSubmissionId,
+        args,
+      })
+
       if (!providerChainId) {
-        onMutationError(new Error('Invalid Chain'))
+        onMutationError({
+          ...mutationInfo,
+          submissionId: 0,
+          error: new Error('Invalid Chain'),
+        })
         return
       }
 
-      setSubmitting(true)
-      onMutationSubmit(
-        contractAddress,
-        contractName,
-        methodName,
-        options?.transactionName || '',
-        ...args,
-      )
-      return transaction.send(...args)
+      const receipt = await transaction.send(...args)
+      return receipt
     },
     [transaction.send, chainId, providerChainId, contract],
   )
 
   useEffect(() => {
     if (transaction.state.status === 'Exception') {
-      onMutationError(new Error(transaction.state.errorMessage))
+      onMutationError({
+        ...mutationInfo,
+        submissionId,
+        receipt: transaction.state.receipt,
+        error: new Error(transaction.state.errorMessage),
+      })
     } else if (transaction.state.status === 'Success') {
-      onMutationSuccess()
+      onMutationSuccess({
+        ...mutationInfo,
+        submissionId,
+        receipt: transaction.state.receipt,
+      })
     }
 
     if (['Exception', 'Fail', 'Success'].includes(transaction.state.status)) {

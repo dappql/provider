@@ -11,7 +11,7 @@ const core_1 = require("@usedapp/core");
 var cache_2 = require("@dappql/cache");
 Object.defineProperty(exports, "useLookupAddress", { enumerable: true, get: function () { return cache_2.useLookupAddress; } });
 const Context = (0, react_1.createContext)({});
-function DappQLProvider({ config, queryParams = {}, cacheOptions = {}, children, onMutationSubmit, onMutationSuccess, onMutationError, addressResolver, AddressResolverComponent, }) {
+function DappQLProvider({ config, queryParams = {}, cacheOptions = {}, children, addressResolver, AddressResolverComponent, onMutationSubmit, onMutationSuccess, onMutationError, }) {
     const [addressResolverState, setAddressResolver] = (0, react_1.useState)({ callback: addressResolver });
     return ((0, jsx_runtime_1.jsx)(cache_1.default, { ...cacheOptions, children: (0, jsx_runtime_1.jsx)(core_1.DAppProvider, { config: config, children: (0, jsx_runtime_1.jsxs)(Context.Provider, { value: {
                     queryParams,
