@@ -12,7 +12,7 @@ import { BaseContract } from 'ethers'
 import { useDappQL } from './provider'
 import { useTransactionLoading } from './useTransactionLoading'
 
-type ContractCollection = Record<string, BaseContract>
+export type ContractCollection = Record<string, BaseContract>
 
 export function useMasterMutation<
   Contracts extends ContractCollection,
@@ -26,22 +26,25 @@ export function useMasterMutation<
   const {
     queryParams: { chainId },
     addressResolver,
+    onMutationSubmit,
+    onMutationSuccess,
     onMutationError,
   } = useDappQL()
 
   const { chainId: providerChainId } = useEthers()
 
+  const contractAddress = useMemo(
+    () => addressResolver?.(contractName.toString(), chainId),
+    [contractName, chainId, addressResolver],
+  )
+
   const contract = useMemo(
-    () =>
-      getContract(
-        contractName,
-        chainId,
-        addressResolver?.(contractName.toString(), chainId),
-      ),
-    [getContract, contractName, chainId, addressResolver],
+    () => getContract(contractName, chainId, contractAddress),
+    [getContract, contractName, chainId, contractAddress],
   )
 
   const [submitting, setSubmitting] = useState(false)
+  const [submissionId, setSubmissionId] = useState(0)
 
   const options = useMemo(
     () =>
@@ -56,25 +59,58 @@ export function useMasterMutation<
   })
   const isLoading = useTransactionLoading(transaction.state) || submitting
 
+  const mutationInfo = {
+    contractAddress,
+    contractName,
+    methodName,
+    transactionName: options?.transactionName || '',
+  }
+
   const send = useCallback(
     async (
       ...args: Params<Contracts[T], typeof methodName>
     ): Promise<TransactionReceipt | undefined> => {
+      setSubmitting(true)
+
+      const newSubmissionId = Date.now()
+      setSubmissionId(newSubmissionId)
+      onMutationSubmit({
+        ...mutationInfo,
+        submissionId: newSubmissionId,
+        args,
+      })
+
       if (!providerChainId) {
-        onMutationError(new Error('Invalid Chain'))
+        onMutationError({
+          ...mutationInfo,
+          submissionId: newSubmissionId,
+          error: new Error('Invalid Chain'),
+        })
         return
       }
 
-      setSubmitting(true)
-      return transaction.send(...args)
+      const receipt = await transaction.send(...args)
+      return receipt
     },
     [transaction.send, chainId, providerChainId, contract],
   )
 
   useEffect(() => {
     if (transaction.state.status === 'Exception') {
-      onMutationError(new Error(transaction.state.errorMessage))
+      onMutationError({
+        ...mutationInfo,
+        submissionId,
+        receipt: transaction.state.receipt,
+        error: new Error(transaction.state.errorMessage),
+      })
+    } else if (transaction.state.status === 'Success') {
+      onMutationSuccess({
+        ...mutationInfo,
+        submissionId,
+        receipt: transaction.state.receipt,
+      })
     }
+
     if (['Exception', 'Fail', 'Success'].includes(transaction.state.status)) {
       setSubmitting(false)
     }
