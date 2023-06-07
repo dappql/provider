@@ -83,7 +83,7 @@ export function useMasterMutation<
       if (!providerChainId) {
         onMutationError({
           ...mutationInfo,
-          submissionId: 0,
+          submissionId: newSubmissionId,
           error: new Error('Invalid Chain'),
         })
         return
