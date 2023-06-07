@@ -20,7 +20,7 @@ type MutationInfo<
   contractAddress: string
   contractName: T
   methodName: ContractFunctionNames<Contracts[T]>
-  optionsOrTransactionName?: string
+  transactionName?: string
   submissionId: number
 }
 

@@ -10,7 +10,7 @@ type MutationInfo<Contracts extends ContractCollection, T extends keyof Contract
     contractAddress: string;
     contractName: T;
     methodName: ContractFunctionNames<Contracts[T]>;
-    optionsOrTransactionName?: string;
+    transactionName?: string;
     submissionId: number;
 };
 export type MutationSubmitInfo<Contracts extends ContractCollection, T extends keyof Contracts> = MutationInfo<Contracts, T> & {
