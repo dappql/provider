@@ -31,7 +31,7 @@ export function useMasterMutation<
     onMutationError,
   } = useDappQL()
 
-  const { chainId: providerChainId } = useEthers()
+  const { chainId: providerChainId, account } = useEthers()
 
   const contractAddress = useMemo(
     () => addressResolver?.(contractName.toString(), chainId),
@@ -60,6 +60,7 @@ export function useMasterMutation<
   const isLoading = useTransactionLoading(transaction.state) || submitting
 
   const mutationInfo = {
+    account,
     contractAddress,
     contractName,
     methodName,

@@ -17,6 +17,7 @@ type MutationInfo<
   Contracts extends ContractCollection,
   T extends keyof Contracts,
 > = {
+  account?: string
   contractAddress: string
   contractName: T
   methodName: ContractFunctionNames<Contracts[T]>
