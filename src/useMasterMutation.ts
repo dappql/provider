@@ -9,7 +9,7 @@ import {
 } from '@usedapp/core/dist/esm/src/model'
 import { BaseContract } from 'ethers'
 
-import { useDappQL } from './provider'
+import { useDappQL } from './Provider'
 import { useTransactionLoading } from './useTransactionLoading'
 
 export type ContractCollection = Record<string, BaseContract>

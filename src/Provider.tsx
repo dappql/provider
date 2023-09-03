@@ -9,8 +9,6 @@ import {
 } from '@usedapp/core/dist/esm/src/model/types'
 import { BaseContract } from 'ethers'
 
-export { useLookupAddress } from '@dappql/cache'
-
 type ContractCollection = Record<string, BaseContract>
 
 type MutationInfo<

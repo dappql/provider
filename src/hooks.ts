@@ -15,7 +15,7 @@ import {
   TypedContract,
 } from '@usedapp/core/dist/esm/src/model'
 
-import { useDappQL } from './provider'
+import { useDappQL } from './Provider'
 
 export { useLookupAddress } from '@dappql/cache'
 

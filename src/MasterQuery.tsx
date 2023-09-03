@@ -1,24 +1,13 @@
 import { ComponentType, ReactElement, useMemo } from 'react'
 
 import { CacheOptions } from '@dappql/cache'
+import { Provider } from '@ethersproject/abstract-provider'
 import { QueryParams, useEthers } from '@usedapp/core'
-import { ContractMethodNames, Params } from '@usedapp/core/dist/esm/src/model'
-import { BaseContract } from 'ethers'
 
 import { useCalls } from './hooks'
-import { useDappQL } from './provider'
-
-type Request = {
-  contractName: string
-  contract: (network: number, address?: string) => BaseContract
-  method: ContractMethodNames<BaseContract>
-  args: Params<BaseContract, ContractMethodNames<BaseContract>>
-  returnType?: Awaited<
-    ReturnType<BaseContract['functions'][ContractMethodNames<BaseContract>]>
-  >[0]
-}
-
-type RequestCollection = Record<string, Request>
+import { masterMulticall } from './multicall'
+import { useDappQL } from './Provider'
+import { RequestCollection } from './types'
 
 export function useMasterQuery<
   Requests extends RequestCollection,
@@ -177,4 +166,36 @@ export function MasterAccountQueryContainer<
   return (
     <MasterQueryContainer<Requests, T> {...other} query={queryWithAccount} />
   )
+}
+
+export async function masterQuery<T extends RequestCollection>(
+  requests: T,
+  provider: Provider,
+  multicallAddress: string,
+  queryParams: QueryParams = {},
+) {
+  const callKeys = Object.keys(requests) as (keyof T)[]
+  const calls = callKeys.map((c) => {
+    const req = requests[c]
+    return {
+      contract: req.contract(queryParams.chainId),
+      method: req.method,
+      args: req.args,
+    }
+  })
+
+  const results = await masterMulticall(calls, provider, multicallAddress)
+  const error = !!results.find((r) => !r.success)
+
+  const data = {} as {
+    [K in keyof T]: NonNullable<T[K]['returnType']>
+  }
+  callKeys.forEach((k, index) => {
+    data[k] =
+      results[index].result?.length > 1
+        ? results[index].result
+        : results[index].result?.[0]
+  })
+
+  return { data, error }
 }
