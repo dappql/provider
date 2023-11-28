@@ -41,7 +41,12 @@ export function useMasterMutation<
       optionsOrTransactionName.contractAddress
         ? optionsOrTransactionName.contractAddress
         : addressResolver?.(contractName.toString(), chainId),
-    [contractName, chainId, addressResolver],
+    [
+      contractName,
+      chainId,
+      addressResolver,
+      JSON.stringify(optionsOrTransactionName),
+    ],
   )
 
   const contract = useMemo(
