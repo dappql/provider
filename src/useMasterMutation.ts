@@ -21,7 +21,9 @@ export function useMasterMutation<
   getContract: (contract: T, network: number, address?: string) => Contracts[T],
   contractName: T,
   methodName: ContractFunctionNames<Contracts[T]>,
-  optionsOrTransactionName?: TransactionOptions | string,
+  optionsOrTransactionName?:
+    | (TransactionOptions & { contractAddress?: string })
+    | string,
 ) {
   const {
     queryParams: { chainId },
@@ -34,7 +36,11 @@ export function useMasterMutation<
   const { chainId: providerChainId, account } = useEthers()
 
   const contractAddress = useMemo(
-    () => addressResolver?.(contractName.toString(), chainId),
+    () =>
+      typeof optionsOrTransactionName !== 'string' &&
+      optionsOrTransactionName.contractAddress
+        ? optionsOrTransactionName.contractAddress
+        : addressResolver?.(contractName.toString(), chainId),
     [contractName, chainId, addressResolver],
   )
 
