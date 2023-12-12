@@ -37,6 +37,7 @@ export function useMasterMutation<
 
   const contractAddress = useMemo(
     () =>
+      optionsOrTransactionName &&
       typeof optionsOrTransactionName !== 'string' &&
       optionsOrTransactionName.contractAddress
         ? optionsOrTransactionName.contractAddress
