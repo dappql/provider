@@ -8,6 +8,7 @@ import {
   TransactionOptions,
 } from '@usedapp/core/dist/esm/src/model'
 import { BaseContract } from 'ethers'
+import { LogDescription } from 'ethers/lib/utils'
 
 import { useDappQL } from './Provider'
 import { useTransactionLoading } from './useTransactionLoading'
@@ -22,7 +23,10 @@ export function useMasterMutation<
   contractName: T,
   methodName: ContractFunctionNames<Contracts[T]>,
   optionsOrTransactionName?:
-    | (TransactionOptions & { contractAddress?: string })
+    | (TransactionOptions & {
+        contractAddress?: string
+        eventsListener?: (e: LogDescription[]) => any
+      })
     | string,
 ) {
   const {
@@ -34,6 +38,7 @@ export function useMasterMutation<
   } = useDappQL()
 
   const { chainId: providerChainId, account } = useEthers()
+  const [eventsSent, setEventsSent] = useState(false)
 
   const contractAddress = useMemo(
     () =>
@@ -84,6 +89,7 @@ export function useMasterMutation<
       ...args: Params<Contracts[T], typeof methodName>
     ): Promise<TransactionReceipt | undefined> => {
       setSubmitting(true)
+      setEventsSent(false)
 
       const newSubmissionId = Date.now()
       setSubmissionId(newSubmissionId)
@@ -134,6 +140,12 @@ export function useMasterMutation<
       transaction.resetState()
     }
   }, [isLoading])
+
+  useEffect(() => {
+    if (eventsSent || !options.eventsListener || !transaction.events) return
+    setEventsSent(eventsSent)
+    options.eventsListener(transaction.events)
+  }, [JSON.stringify(transaction.events)])
 
   return {
     ...transaction,
