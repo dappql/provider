@@ -143,7 +143,7 @@ export function useMasterMutation<
 
   useEffect(() => {
     if (eventsSent || !options.eventsListener || !transaction.events) return
-    setEventsSent(eventsSent)
+    setEventsSent(true)
     options.eventsListener(transaction.events)
   }, [JSON.stringify(transaction.events)])
 
